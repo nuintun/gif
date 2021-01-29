@@ -6,11 +6,11 @@
   "typings": "typings/index.d.ts",
   "scripts": {
     "test": "node tests",
-    "build:es5": "rollup -c tools/rollup.es5.js",
-    "build:esnext": "rollup -c tools/rollup.esnext.js",
-    "asbuild": "npm run asbuild:untouched && npm run asbuild:optimized",
-    "asbuild:untouched": "asc assembly/index.ts --target debug --exportRuntime",
-    "asbuild:optimized": "asc assembly/index.ts --target release --exportRuntime"
+    "build": "npm run asbuild && npm run tsbuild",
+    "tsbuild:es5": "rollup -c tools/rollup.es5.js",
+    "tsbuild:esnext": "rollup -c tools/rollup.esnext.js",
+    "tsbuild": "npm run tsbuild:es5 && npm run tsbuild:esnext",
+    "asbuild": "asc assembly/index.ts --target release --exportRuntime"
   },
   "repository": {
     "type": "git",
@@ -41,6 +41,6 @@
     "@types/node": "^14.14.22",
     "assemblyscript": "^0.18.0",
     "@rollup/pluginutils": "^4.1.0",
-    "@rollup/plugin-typescript": "^8.1.0"
+    "rollup-plugin-typescript2": "^0.29.0"
   }
 }

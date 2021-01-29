@@ -7,7 +7,7 @@
 import * as fs from 'fs';
 import clean from './clean';
 import MagicString from 'magic-string';
-import typescript from '@rollup/plugin-typescript';
+import typescript from 'rollup-plugin-typescript2';
 import { createFilter } from '@rollup/pluginutils';
 
 function wasm() {
@@ -76,7 +76,10 @@ function onwarn(error, warn) {
 }
 
 export default function configure(esnext) {
-  clean();
+  clean(esnext);
+
+  const tsconfigOverride = { compilerOptions: { declaration: true, declarationDir: 'typings' } };
+  const tsconfig = esnext ? { tsconfigOverride, clean: true, useTsconfigDeclarationDir: true } : { clean: true };
 
   return {
     onwarn,
@@ -89,7 +92,7 @@ export default function configure(esnext) {
       format: esnext ? 'esm' : 'cjs',
       dir: esnext ? 'esnext' : 'es5'
     },
-    plugins: [wasm(), typescript(), treeShake()],
-    external: ['tslib', '@assemblyscript/loader']
+    external: ['tslib', '@assemblyscript/loader'],
+    plugins: [wasm(), typescript(tsconfig), treeShake()]
   };
 }

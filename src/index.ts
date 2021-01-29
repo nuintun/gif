@@ -1,4 +1,4 @@
-import wasm from '../build/optimized.wasm';
+import wasm from '../wasm/gif.wasm';
 import { instantiateSync } from '@assemblyscript/loader';
 
 let buffer: ArrayBuffer;

@@ -1,7 +1,5 @@
 /**
  * @module index
- * @author nuintun
- * @author Kazuhiko Arase
  */
 
 import ByteArray from './ByteArray';
