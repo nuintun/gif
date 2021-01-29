@@ -5,13 +5,11 @@
     "newLine": "LF",
     "target": "ESNext",
     "module": "ESNext",
-    "declaration": false,
     "alwaysStrict": true,
     "importHelpers": true,
     "noImplicitAny": true,
     "noUnusedLocals": true,
     "moduleResolution": "Node",
-    "declarationDir": "typings",
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true
   },

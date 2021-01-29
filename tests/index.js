@@ -1,7 +1,6 @@
-const { __getString, __newString, ByteArray, Uint8Array_ID, __newArray, __getUint8Array, __pin } = require('..');
+const { __getString, __newString, __newArray, __getUint8Array, __pin, ByteArray, Uint8Array_ID } = require('../es5');
 
 const bytes = new ByteArray();
-
 const bytes1 = new ByteArray();
 
 bytes.writeUTF8(__newString('你好'));
