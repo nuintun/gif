@@ -40,8 +40,8 @@ export function assertBackground(background: i32, palette: i32[]): i32 {
 }
 
 export function assertRepeat(count: i32): i32 {
-  if (count < -1 || count > 0xffff) {
-    throw new RangeError('Invalid count, must be [-1 - 65535]');
+  if (count < 0 || count > 0xffff) {
+    throw new RangeError('Invalid count, must be [0 - 65535]');
   }
 
   return count;

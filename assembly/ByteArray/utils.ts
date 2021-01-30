@@ -10,8 +10,8 @@
  * @returns {i32}
  */
 export function calcBestLength(length: i32, pageSize: u16): i32 {
-  if (length > (pageSize as i32)) {
-    const pages: i32 = Math.ceil(length / pageSize) as i32;
+  if (length > <i32>pageSize) {
+    const pages: i32 = <i32>Math.ceil(length / pageSize);
 
     return pages * pageSize;
   } else {
