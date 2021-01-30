@@ -1,19 +1,19 @@
-const { __getString, __newString, __newArray, __getUint8Array, __pin, ByteArray, Uint8Array_ID } = require('../es5');
+// import { __getString, __newString, ByteArray } from '../es5';
+
+const { __getString, __newString, ByteArray } = require('../es5');
 
 const bytes = new ByteArray();
-const bytes1 = new ByteArray();
+const world = 'ByteArray，你好！';
 
-bytes.writeUTF8(__newString('你好'));
+bytes.writeInt8(-128);
 bytes.writeUint8(255);
+bytes.writeUint16(Buffer.byteLength(world));
+bytes.write(__newString(world));
 
 bytes.offset = 0;
 
-bytes.copy(bytes1);
+const int8 = bytes.readInt8();
+const uint8 = bytes.readUint8();
+const uint16 = bytes.readUint16();
 
-bytes1.offset = 0;
-
-const bytes2 = ByteArray.wrap(__pin(ByteArray.from(__newArray(Uint8Array_ID, __getUint8Array(bytes.bytes)))));
-
-bytes2.offset = 0;
-
-console.log(__getString(bytes2.readUTF8()), bytes2.readUint8());
+console.log(int8, uint8, uint16, __getString(bytes.read(uint16)), __getString(bytes.toString()));

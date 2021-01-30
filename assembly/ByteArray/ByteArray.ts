@@ -4,36 +4,8 @@
 
 import * as Hex from './Hex';
 import * as Binary from './Binary';
-
-const enum ByteLength {
-  INT8 = 1,
-  UINT8 = 1,
-  INT16 = 2,
-  UINT16 = 2,
-  INT32 = 4,
-  UINT32 = 4,
-  INI64 = 8,
-  UINT64 = 8,
-  FLOAT32 = 4,
-  FLOAT64 = 8
-}
-
-/**
- * @function calcBestLength
- * @description 计算适合的 ByteArray 长度
- * @param {i32} length 数据字节总大小
- * @param {u16} pageSize 缓冲区页大小
- * @returns {i32}
- */
-function calcBestLength(length: i32, pageSize: u16): i32 {
-  if (length > (pageSize as i32)) {
-    const pages: i32 = Math.ceil(length / pageSize) as i32;
-
-    return pages * pageSize;
-  } else {
-    return length;
-  }
-}
+import { ByteLength } from './enum';
+import { calcBestLength, stringDecode, stringEncode } from './utils';
 
 /**
  * @class ByteArray
@@ -131,19 +103,23 @@ export default class ByteArray {
    * 如果将长度设置为小于当前长度的值，将会截断该字节数组
    */
   public set length(value: i32) {
+    const length: i32 = value - this._length;
+
+    if (length > 0) {
+      this.grow(length);
+    } else if (length < 0) {
+      this._length = value;
+    }
+
     if (this._offset > value) {
       this._offset = value;
     }
-
-    this._length = value;
-
-    this.grow(value);
   }
 
   /**
    * @public
    * @property {i32} length
-   * @description 获取 ByteArray 已写入对象的长度（以字节为单位）
+   * @description 获取 ByteArray 已写入对象的长度，以字节为单位
    * @returns {i32}
    */
   public get length(): i32 {
@@ -189,23 +165,6 @@ export default class ByteArray {
    */
   public get bytesAvailable(): i32 {
     return this._dataView.byteLength - this._offset;
-  }
-
-  /**
-   * @protected
-   * @method getGrownSize
-   * @description 获取缓冲区增长后的适合大小
-   * @param {i32} length
-   * @returns {i32}
-   */
-  protected getGrownSize(length: i32): i32 {
-    if (this._pageSize) {
-      const pages: i32 = ((length / this._pageSize) | 0) + 1;
-
-      return pages * this._pageSize;
-    } else {
-      return length;
-    }
   }
 
   /**
@@ -405,18 +364,16 @@ export default class ByteArray {
   }
 
   /**
-   * @method writeUTF8
-   * @description 将 UTF-8 字符串写入字节流。
-   * @description 先写入以字节表示的 UTF-8 字符串长度（Uint32），然后写入表示字符串字符的字节
-   * @param {string} value 要写入的字符串值
-   *
+   * @method write
+   * @description 将字符串用指定编码写入字节流
+   * @param {string} value 要写入的字符串
+   * @param {string} [encoding] 字符串编码
    */
-  public writeUTF8(value: string): void {
-    const bytes: Uint8Array = Uint8Array.wrap(String.UTF8.encode(value));
+  public write(value: string, encoding: string = 'UTF8'): void {
+    const utf8: ArrayBuffer = stringEncode(value, encoding);
+    const bytes: Uint8Array = Uint8Array.wrap(utf8);
 
-    this.grow(ByteLength.UINT32 + bytes.length);
-    this._dataView.setUint32(this._offset, bytes.length);
-    this.moveOffset(ByteLength.UINT32);
+    this.grow(bytes.length);
     this._bytes.set(bytes, this._offset);
     this.moveOffset(bytes.length);
   }
@@ -561,17 +518,18 @@ export default class ByteArray {
   }
 
   /**
-   * @method readUTF8
-   * @description 从字节流中读取一个 UTF-8 字符串。
-   * @returns {string} UTF-8 编码的字符串
+   * @method read
+   * @description 从字节流中读取一个字符串
+   * @param {i32} length 读取的字节长度
+   * @param {string} [encoding] 字符串编码
+   * @returns {string} 指定编码的字符串
    */
-  public readUTF8(): string {
-    const length: u32 = this.readUint32();
-
+  public read(length: i32, encoding: string = 'UTF8'): string {
     if (length > 0) {
-      const size: i32 = this._offset + length;
+      const end: i32 = this._offset + length;
       const buffer: ArrayBuffer = this._dataView.buffer;
-      const value: string = String.UTF8.decode(buffer.slice(this._offset, size));
+      const utf8: ArrayBuffer = buffer.slice(this._offset, end);
+      const value: string = stringDecode(utf8, encoding);
 
       this.moveOffset(length);
 

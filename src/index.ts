@@ -1,4 +1,5 @@
 import wasm from '../wasm/gif.wasm';
+import ASModule from '../wasm/gif.d';
 import { instantiateSync } from '@assemblyscript/loader';
 
 let buffer: ArrayBuffer;
@@ -17,4 +18,4 @@ if (Buffer && Buffer.from) {
   buffer = bytes.buffer;
 }
 
-export default instantiateSync(buffer).exports;
+export default instantiateSync<typeof ASModule>(buffer).exports;

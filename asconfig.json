@@ -5,6 +5,7 @@
       "converge": false,
       "noAssert": false,
       "optimizeLevel": 3,
+      "tsdFile": "wasm/gif.d.ts",
       "binaryFile": "wasm/gif.wasm"
     }
   }
