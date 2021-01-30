@@ -1,10 +1,12 @@
 {
   "targets": {
     "release": {
-      "shrinkLevel": 1,
+      "shrinkLevel": 2,
+      "runtime": "stub",
       "converge": false,
       "noAssert": false,
       "optimizeLevel": 3,
+      "exportRuntime": true,
       "tsdFile": "wasm/gif.d.ts",
       "binaryFile": "wasm/gif.wasm"
     }

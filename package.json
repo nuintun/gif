@@ -8,9 +8,9 @@
     "test": "node tests",
     "build": "npm run asbuild && npm run tsbuild",
     "tsbuild:es5": "rollup -c tools/rollup.es5.js",
+    "asbuild": "asc assembly/index.ts --target release",
     "tsbuild:esnext": "rollup -c tools/rollup.esnext.js",
-    "tsbuild": "npm run tsbuild:es5 && npm run tsbuild:esnext",
-    "asbuild": "asc assembly/index.ts --target release --exportRuntime"
+    "tsbuild": "npm run tsbuild:es5 && npm run tsbuild:esnext"
   },
   "repository": {
     "type": "git",
