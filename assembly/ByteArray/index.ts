@@ -2,10 +2,9 @@
  * @module ByteArray
  */
 
-import * as Hex from './Hex';
 import * as Binary from './Binary';
 import { ByteLength } from './enum';
-import { calcBestLength, stringDecode, stringEncode } from './utils';
+import { calcBestLength, calcSubLength, stringDecode, stringEncode } from './utils';
 
 /**
  * @class ByteArray
@@ -41,36 +40,6 @@ export default class ByteArray {
     this._initLength = calcBestLength(length, pageSize);
     this._bytes = new Uint8Array(this._initLength);
     this._dataView = new DataView(this._bytes.buffer);
-  }
-
-  /**
-   * @public
-   * @static
-   * @function from
-   * @description 从 Uint8Array 转换 ByteArray
-   * @param {ArrayBuffer} uint8Array Uint8Array 对象
-   * @param {i32} offset Uint8Array 对象复制偏移量
-   * @param {i32} length Uint8Array 对象复制字节长度
-   * @returns {ByteArray}
-   */
-  public static from(uint8Array: Uint8Array, offset: i32 = 0, length: i32 = -1): ByteArray {
-    const byteArray: ByteArray = new ByteArray();
-
-    if (uint8Array && offset >= 0) {
-      if (length < 0) {
-        length = uint8Array.length - offset;
-      } else {
-        length = <i32>Math.min(uint8Array.length - offset, length);
-      }
-
-      if (length > 0) {
-        byteArray.grow(length);
-        byteArray._bytes.set(uint8Array.subarray(offset, offset + length), byteArray._offset);
-        byteArray.moveOffset(length);
-      }
-    }
-
-    return byteArray;
   }
 
   /**
@@ -141,7 +110,7 @@ export default class ByteArray {
    * @returns {Uint8Array}
    */
   public get bytes(): Uint8Array {
-    return this._bytes.subarray(0, this._length);
+    return this._bytes.slice(0, this._length);
   }
 
   /**
@@ -171,7 +140,7 @@ export default class ByteArray {
    * @param {i32} length
    */
   protected grow(length: i32): void {
-    length = <i32>Math.max(length + this._offset, this._length);
+    length = <i32>Math.max(this._length, this._offset + length);
 
     if (this._dataView.byteLength < length) {
       const bytes: Uint8Array = new Uint8Array(calcBestLength(length, this._pageSize));
@@ -200,34 +169,10 @@ export default class ByteArray {
    * @description 清除缓冲区数据并重置默认状态
    */
   public clear(): void {
-    this._length = 0;
     this._offset = 0;
+    this._length = 0;
     this._bytes = new Uint8Array(this._initLength);
     this._dataView = new DataView(this._bytes.buffer);
-  }
-
-  /**
-   * @static
-   * @function copy
-   * @description 从 ByteArray 复制数据
-   * @param {ByteArray} byteArray ByteArray 对象
-   * @param {i32} offset ByteArray 对象复制偏移量
-   * @param {i32} length ByteArray 对象复制字节长度
-   */
-  public copy(byteArray: ByteArray, offset: i32 = 0, length: i32 = -1): void {
-    if (byteArray && offset >= 0) {
-      if (length < 0) {
-        length = byteArray.length - offset;
-      } else {
-        length = <i32>Math.min(byteArray.length - offset, length);
-      }
-
-      if (length > 0) {
-        this.grow(length);
-        this._bytes.set(byteArray._bytes.subarray(offset, offset + length), this._offset);
-        this.moveOffset(length);
-      }
-    }
   }
 
   /**
@@ -271,7 +216,7 @@ export default class ByteArray {
    */
   public writeInt16(value: i16, littleEndian: bool = false): void {
     this.grow(ByteLength.INT16);
-    this._dataView.setInt16(this._offset, value, <boolean>littleEndian);
+    this._dataView.setInt16(this._offset, value, littleEndian);
     this.moveOffset(ByteLength.INT16);
   }
 
@@ -283,7 +228,7 @@ export default class ByteArray {
    */
   public writeUint16(value: u16, littleEndian: bool = false): void {
     this.grow(ByteLength.UINT16);
-    this._dataView.setUint16(this._offset, value, <boolean>littleEndian);
+    this._dataView.setUint16(this._offset, value, littleEndian);
     this.moveOffset(ByteLength.UINT16);
   }
 
@@ -295,7 +240,7 @@ export default class ByteArray {
    */
   public writeInt32(value: i32, littleEndian: bool = false): void {
     this.grow(ByteLength.INT32);
-    this._dataView.setInt32(this._offset, value, <boolean>littleEndian);
+    this._dataView.setInt32(this._offset, value, littleEndian);
     this.moveOffset(ByteLength.INT32);
   }
 
@@ -307,7 +252,7 @@ export default class ByteArray {
    */
   public writeUint32(value: u32, littleEndian: bool = false): void {
     this.grow(ByteLength.UINT32);
-    this._dataView.setUint32(this._offset, value, <boolean>littleEndian);
+    this._dataView.setUint32(this._offset, value, littleEndian);
     this.moveOffset(ByteLength.UINT32);
   }
 
@@ -319,7 +264,7 @@ export default class ByteArray {
    */
   public writeInt64(value: i64, littleEndian: bool = false): void {
     this.grow(ByteLength.INI64);
-    this._dataView.setInt64(this._offset, value, <boolean>littleEndian);
+    this._dataView.setInt64(this._offset, value, littleEndian);
     this.moveOffset(ByteLength.INI64);
   }
 
@@ -331,7 +276,7 @@ export default class ByteArray {
    */
   public writeUint64(value: u64, littleEndian: bool = false): void {
     this.grow(ByteLength.UINT64);
-    this._dataView.setUint64(this._offset, value, <boolean>littleEndian);
+    this._dataView.setUint64(this._offset, value, littleEndian);
     this.moveOffset(ByteLength.UINT64);
   }
 
@@ -343,7 +288,7 @@ export default class ByteArray {
    */
   public writeFloat32(value: f32, littleEndian: bool = false): void {
     this.grow(ByteLength.FLOAT32);
-    this._dataView.setFloat32(this._offset, value, <boolean>littleEndian);
+    this._dataView.setFloat32(this._offset, value, littleEndian);
     this.moveOffset(ByteLength.FLOAT32);
   }
 
@@ -355,8 +300,24 @@ export default class ByteArray {
    */
   public writeFloat64(value: f64, littleEndian: bool = false): void {
     this.grow(ByteLength.FLOAT64);
-    this._dataView.setFloat64(this._offset, value, <boolean>littleEndian);
+    this._dataView.setFloat64(this._offset, value, littleEndian);
     this.moveOffset(ByteLength.FLOAT64);
+  }
+
+  /**
+   * @method writeBytes
+   * @description 在缓冲区中写入 Uint8Array 对象
+   * @param {i32} [begin] 开始索引
+   * @param {i32} [end] 结束索引
+   */
+  public writeBytes(bytes: Uint8Array, begin: i32 = 0, end: i32 = bytes.length): void {
+    const length: i32 = calcSubLength(bytes.length, begin, end);
+
+    if (length > 0) {
+      this.grow(length);
+      this._bytes.set(bytes.subarray(begin, end), this._offset);
+      this.moveOffset(length);
+    }
   }
 
   /**
@@ -366,12 +327,7 @@ export default class ByteArray {
    * @param {string} [encoding] 字符串编码
    */
   public write(value: string, encoding: string = 'UTF8'): void {
-    const utf8: ArrayBuffer = stringEncode(value, encoding);
-    const bytes: Uint8Array = Uint8Array.wrap(utf8);
-
-    this.grow(bytes.length);
-    this._bytes.set(bytes, this._offset);
-    this.moveOffset(bytes.length);
+    this.writeBytes(Uint8Array.wrap(stringEncode(value, encoding)));
   }
 
   /**
@@ -415,7 +371,7 @@ export default class ByteArray {
    * @returns {i16} 介于 -32768 和 32767 之间的 16 位有符号整数
    */
   public readInt16(littleEndian: bool = false): i16 {
-    const value: i16 = this._dataView.getInt16(this._offset, <boolean>littleEndian);
+    const value: i16 = this._dataView.getInt16(this._offset, littleEndian);
 
     this.moveOffset(ByteLength.INT16);
 
@@ -428,7 +384,7 @@ export default class ByteArray {
    * @returns {u16} 介于 0 和 65535 之间的 16 位无符号整数
    */
   public readUint16(littleEndian: bool = false): u16 {
-    const value: u16 = this._dataView.getUint16(this._offset, <boolean>littleEndian);
+    const value: u16 = this._dataView.getUint16(this._offset, littleEndian);
 
     this.moveOffset(ByteLength.UINT16);
 
@@ -441,7 +397,7 @@ export default class ByteArray {
    * @returns {i32} 介于 -2147483648 和 2147483647 之间的 32 位有符号整数
    */
   public readInt32(littleEndian: bool = false): i32 {
-    const value: i32 = this._dataView.getInt32(this._offset, <boolean>littleEndian);
+    const value: i32 = this._dataView.getInt32(this._offset, littleEndian);
 
     this.moveOffset(ByteLength.INT32);
 
@@ -454,7 +410,7 @@ export default class ByteArray {
    * @returns {u32} 介于 0 和 4294967295 之间的 32 位无符号整数
    */
   public readUint32(littleEndian: bool = false): u32 {
-    const value: u32 = this._dataView.getUint32(this._offset, <boolean>littleEndian);
+    const value: u32 = this._dataView.getUint32(this._offset, littleEndian);
 
     this.moveOffset(ByteLength.UINT32);
 
@@ -467,7 +423,7 @@ export default class ByteArray {
    * @returns {i64} 介于 -9223372036854775808 和 9223372036854775807 之间的 64 位有符号整数
    */
   public readInt64(littleEndian: bool = false): i64 {
-    const value: i64 = this._dataView.getInt64(this._offset, <boolean>littleEndian);
+    const value: i64 = this._dataView.getInt64(this._offset, littleEndian);
 
     this.moveOffset(ByteLength.INI64);
 
@@ -480,7 +436,7 @@ export default class ByteArray {
    * @returns {u64} 介于 0 和 18446744073709551615 之间的 64 位无符号整数
    */
   public readUint64(littleEndian: bool = false): u64 {
-    const value: u64 = this._dataView.getUint64(this._offset, <boolean>littleEndian);
+    const value: u64 = this._dataView.getUint64(this._offset, littleEndian);
 
     this.moveOffset(ByteLength.UINT64);
 
@@ -493,7 +449,7 @@ export default class ByteArray {
    * @returns {f32} 单精度 32 位浮点数
    */
   public readFloat32(littleEndian: bool = false): f32 {
-    const value: f32 = this._dataView.getFloat32(this._offset, <boolean>littleEndian);
+    const value: f32 = this._dataView.getFloat32(this._offset, littleEndian);
 
     this.moveOffset(ByteLength.FLOAT32);
 
@@ -506,11 +462,33 @@ export default class ByteArray {
    * @returns {f64} 双精度 64 位浮点数
    */
   public readFloat64(littleEndian: bool = false): f64 {
-    const value: f64 = this._dataView.getFloat64(this._offset, <boolean>littleEndian);
+    const value: f64 = this._dataView.getFloat64(this._offset, littleEndian);
 
     this.moveOffset(ByteLength.FLOAT64);
 
     return value;
+  }
+
+  /**
+   * @method writeBytes
+   * @description 在缓冲区中写入 Uint8Array 对象
+   * @param {i32} [begin] 开始索引
+   * @param {i32} [end] 结束索引
+   */
+  public readBytes(length: i32): Uint8Array {
+    if (length >= 0) {
+      const end: i32 = this._offset + length;
+
+      if (end <= this._length + 1) {
+        const bytes: Uint8Array = this._bytes.slice(this._offset, end);
+
+        this.moveOffset(length);
+
+        return bytes;
+      }
+    }
+
+    throw new RangeError('Index out of range');
   }
 
   /**
@@ -521,48 +499,7 @@ export default class ByteArray {
    * @returns {string} 指定编码的字符串
    */
   public read(length: i32, encoding: string = 'UTF8'): string {
-    if (length > 0) {
-      const end: i32 = this._offset + length;
-      const buffer: ArrayBuffer = this._dataView.buffer;
-      const utf8: ArrayBuffer = buffer.slice(this._offset, end);
-      const value: string = stringDecode(utf8, encoding);
-
-      this.moveOffset(length);
-
-      return value;
-    }
-
-    return '';
-  }
-
-  /**
-   * @method inspect
-   * @description 检查 Buffer，返回 <Buffer 00 11 22 ... dd ee ff>
-   * @param {i32} max 最大显示字节数，默认 32 字节
-   * @returns {string}
-   */
-  public inspect(max: i32 = 32): string {
-    // Hex 编码字符串
-    let hex: string = '';
-
-    // 提前获取 bytes，防止重复计算
-    const bytes: Uint8Array = this.bytes;
-    // 最大循环次数
-    const count: i32 = Math.max(0, Math.min(max, bytes.length)) as i32;
-
-    // 获取 Hex 编码
-    for (let i: i32 = 0; i < count; i++) {
-      const byte: u8 = bytes[i];
-
-      hex += ' ' + Hex.mapping[byte];
-    }
-
-    if (bytes.length > max) {
-      hex += ' ...';
-    }
-
-    // 返回 Hex 编码
-    return '<Buffer' + hex + '>';
+    return stringDecode(this.readBytes(length).buffer, encoding);
   }
 
   /**

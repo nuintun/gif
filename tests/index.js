@@ -1,36 +1,49 @@
-// import { __getString, __newString, ByteArray } from '../es5';
+// import { __getString, __getUint8Array, __newArray, __newString, ByteArray, Uint8Array_ID } from '../es5';
 
-const { __getString, __newString, ByteArray, __getUint8Array, Uint8Array_ID, __newArray } = require('../es5');
+const hex = require('./hex');
+const { __getString, __getUint8Array, __newArray, __newString, ByteArray, Uint8Array_ID } = require('../es5');
 
-const bytes = new ByteArray();
-const world = 'ByteArray，你好！';
+// const buffer = new ByteArray();
+// const world = 'ByteArray，你好！';
 
-bytes.writeInt8(-128);
-bytes.writeUint8(255);
-bytes.writeUint16(Buffer.byteLength(world));
-bytes.write(__newString(world));
+// buffer.writeInt8(-128);
+// buffer.writeUint8(255);
+// buffer.writeUint16(Buffer.byteLength(world));
+// buffer.write(__newString(world));
 
-bytes.offset = 0;
+// const bytes = __getUint8Array(buffer.bytes);
 
-const int8 = bytes.readInt8();
-const uint8 = bytes.readUint8();
-const uint16 = bytes.readUint16();
+// buffer.offset = 0;
 
-console.log(int8, uint8, uint16, __getString(bytes.read(uint16)), __getString(bytes.toString()));
+// const int8 = buffer.readInt8();
+// const uint8 = buffer.readUint8();
+// const uint16 = buffer.readUint16();
 
-const buffer = __getUint8Array(bytes.bytes);
+// console.log(bytes);
+// console.log(int8, uint8, uint16, __getString(buffer.read(uint16)));
+// console.log(__getString(buffer.inspect()));
 
-console.log(buffer);
-// console.log(__getUint8Array(test(__newArray(Uint8Array_ID, buffer))));
+// const buffer_1 = new ByteArray();
 
-const bytes1 = ByteArray.wrap(ByteArray.from(__newArray(Uint8Array_ID, buffer)));
+// buffer_1.copy(buffer);
 
-bytes1.offset = 0;
+// buffer_1.offset = 0;
 
-console.log(__getUint8Array(bytes1.bytes));
+// console.log(__getUint8Array(buffer_1.bytes));
 
-// const int81 = bytes1.readInt8();
-// const uint81 = bytes1.readUint8();
-// const uint161 = bytes1.readUint16();
+// const int8_1 = buffer_1.readInt8();
+// const uint8_1 = buffer_1.readUint8();
+// const uint16_1 = buffer_1.readUint16();
 
-// console.log(int81, uint81, uint161, __getString(bytes1.read(uint161)), __getString(bytes1.toString()));
+// console.log(int8_1, uint8_1, uint16_1, __getString(buffer_1.read(uint16_1)));
+// console.log(__getString(buffer_1.inspect()));
+
+const x = new ByteArray();
+
+x.writeBytes(__newArray(Uint8Array_ID, new Uint8Array([84, 121, 112, 101, 69, 114, 114, 111, 114, 58])));
+
+x.write(__newString(`TypeError: Cannot read property 'toString' of undefined，你哦`), __newString('utf-8'));
+
+// console.log(__getUint8Array(ByteArray.wrap(x.valueOf()).bytes), '\r\n');
+
+hex(__getUint8Array(x.bytes));
